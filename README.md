@@ -1,5 +1,7 @@
 # yield-Aggregator
 
+Check  APY for compound and AAVE and deposit in the more exchange with the higher yield.
+
 Install Dependencies
 1. Nodejs - (node v10.15.1), (npm 6.4.1), 
 
