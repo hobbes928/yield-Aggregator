@@ -7,7 +7,6 @@ import 'compound-protocol/contracts/CErc20.sol';
 import 'compound-protocol/contracts/CToken.sol';
 import 'compound-protocol/tests/Contracts/ERC20.sol';
 
-
 contract Main {
     
     //stores if address has deposited with Aave or Compound
@@ -20,9 +19,20 @@ contract Main {
     ILendingPool public lendingPool;
     address addressLendingPool;
     address DaiTokenAddress;
-
+    
+    
         
-    constructor() public {
+    //input variables
+    uint256 CompoundAPY;
+    uint256 AaveAPY ;
+    uint256 ETHMantissa = 1000000000000000000;
+    uint256 BlocksPerDay = 6570;
+    uint256 DaysPerYear  = 365;
+    uint16 referralCode= 0;
+    
+    
+    //AAVE addresses in constructor
+     constructor() public {
         
         provider = ILendingPoolAddressesProvider(address(0xB53C1a33016B2DC2fF3653530bfF1848a515c8c5));
         addressLendingPool = provider.getLendingPool();
@@ -30,25 +40,26 @@ contract Main {
         DaiTokenAddress = address(0x6B175474E89094C44Da98b954EedeAC495271d0F);
     }
     
-
+        // Compound addresses
         ERC20 underlying = ERC20(0x6B175474E89094C44Da98b954EedeAC495271d0F);
+        //cDai address for Compound
         CErc20 cToken = CErc20(0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643);
-        
-        //uint256 CompoundAPY = cToken.supplyRatePerBlock();
-        uint256 AaveAPY = 15;
-        uint256 CompoundAPY = 100;
-        
-        //input variables
-        uint16 referralCode= 0;
+
         
         
         function DepositDai(uint256 _amountDai) public payable {
-
+            
+            //APY calculation for Compound only could not find out for AAVE
+            uint256 _rate = cToken.supplyRatePerBlock();
+            CompoundAPY = ((((_rate / ETHMantissa * BlocksPerDay + 1) ** DaysPerYear - 1)) - 1) * 100;
+            AaveAPY = 2;
+            
+            
+            //check APY rates
             if (AaveAPY > CompoundAPY) {
                 
                 lendingPool.deposit(DaiTokenAddress, _amountDai, msg.sender, referralCode);
                 AaveDeposit[msg.sender] = true;
-                
                 
             }
             
@@ -69,6 +80,11 @@ contract Main {
         }
         
         function reBalance(uint256 _reBalanceAmount) public payable {
+            
+            //APY calculation for Compound only could not find out for AAVE
+            uint256 _rate = cToken.supplyRatePerBlock();
+            CompoundAPY = ((((_rate / ETHMantissa * BlocksPerDay + 1) ** DaysPerYear - 1)) - 1) * 100;
+            AaveAPY = 2;
             
             //check APY rates
             if (AaveAPY > CompoundAPY) {
